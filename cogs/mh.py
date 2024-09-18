@@ -21,20 +21,21 @@ class MonsterHunter(commands.Cog):
         await asyncio.sleep(5)
         await msg.delete()
 
-    @commands.group()
+    @commands.hybrid_command(name = "mhww", with_app_command = True, description = "MHWの武器を取得します、")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def mhww(self, ctx, a: str):
+    async def mhww(self, ctx, 武器id: str):
+        await ctx.defer()
         try:
-            url = f"https://mhw-db.com/weapons/{a}"
-            response = requests.get(url)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            jsonData = response.json()
-            translator = Translator(from_lang = "en", to_lang = "ja")
-            result = translator.translate(jsonData["name"])
-            embed = discord.Embed(title=result, color=0x702f00)
-            embed.set_image(url=jsonData['assets']['image'])
-            embed.set_thumbnail(url=jsonData['assets']['icon'])
-            await ctx.send(embed=embed)
+            url = f"https://mhw-db.com/weapons/{武器id}"
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    jsonData = await response.json()
+                    translator = Translator(from_lang = "en", to_lang = "ja")
+                    result = translator.translate(jsonData["name"])
+                    embed = discord.Embed(title=result, color=0x702f00)
+                    embed.set_image(url=jsonData['assets']['image'])
+                    embed.set_thumbnail(url=jsonData['assets']['icon'])
+                    await ctx.send(embed=embed)
         except:
             await ctx.send("エラー。\nそのような武器はない。")
 
@@ -43,20 +44,21 @@ class MonsterHunter(commands.Cog):
     async def mhwa(self, ctx, a: str):
         try:
             url = f"https://mhw-db.com/armor/{a}"
-            response = requests.get(url)
-            jsonData = response.json()
-            if not jsonData["assets"] == None:
-                embed = discord.Embed(title=jsonData["name"], color=0x702f00)
-                embed.set_image(url=jsonData["assets"]['imageMale'])
-                await ctx.send(embed=embed)
-            else:
-                embed = discord.Embed(title="致命的なエラー。", color=0x702f00)
-                await ctx.send(embed=embed)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    jsonData = await response.json()
+                    if not jsonData["assets"] == None:
+                        embed = discord.Embed(title=jsonData["name"], color=0x702f00)
+                        embed.set_image(url=jsonData["assets"]['imageMale'])
+                        await ctx.send(embed=embed)
+                    else:
+                        embed = discord.Embed(title="致命的なエラー。", color=0x702f00)
+                        await ctx.send(embed=embed)
         except:
-            embed = discord.Embed(title="エラー。\nそのような武器はない。", color=0x702f00)
+            embed = discord.Embed(title="エラー。\nそのような防具はない。", color=0x702f00)
             await ctx.send(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "sayuta", with_app_command = True, description = "ゆうたと話します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def sayuta(self, ctx):
         try:
@@ -70,7 +72,7 @@ class MonsterHunter(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 webhook = Webhook.from_url(webhooks.url, session=session)
                 await webhook.send(f"{random.choice(meigen)}", username=f"ゆうた", avatar_url=f"{random.choice(icon)}")
-            await ctx.message.delete()
+            await ctx.author.send("Send .. OK!")
         except:
             await ctx.send("Error!")
 

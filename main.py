@@ -16,7 +16,7 @@ sys.dont_write_bytecode = True
 
 intents = discord.Intents().all()
 intents.message_content = True
-bot = commands.AutoShardedBot(command_prefix=('mo#', 'mo.', '#', "."), intents=intents, help_command=None)
+bot = commands.AutoShardedBot(command_prefix=('mo#', 'mo.'), intents=intents, help_command=None)
 
 client = MongoClient('mongodb://localhost:27017')
 
@@ -65,7 +65,7 @@ async def on_guild_join(guild):
 
 @bot.event
 async def on_message(message):
-    if 'mo.' in message.content or 'mo#' in message.content or '#' in message.content or '.' in message.content:
+    if 'mo.' in message.content or 'mo#' in message.content:
         client = MongoClient('mongodb://localhost:27017/')
         for mon in client["Main"]["DisableCMD"].find():
             if mon["IDs"] == f"{message.channel.id}":
@@ -84,6 +84,4 @@ async def setup_hook():
         if cog.endswith(".py"):
             await bot.load_extension(f"cogs.{cog[:-3]}")
 
-subprocess.run(["start", "py", "beta.py"], shell=True)
-time.sleep(1)
 bot.run(tokens["token"])

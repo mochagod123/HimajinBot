@@ -6,12 +6,12 @@ class info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.hybrid_command(name = "getid", with_app_command = True, description = "ユーザーidをもぎ取ります。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def getid(self, ctx, mem: discord.User = None):
+    async def getid(self, ctx, ユーザー: discord.User = None):
         try:
-            if not mem == None:
-                await ctx.send(embed=discord.Embed(title=f"{mem.display_name}さんのユーザーIDは、`{mem.id}`です。", color=discord.Color.green()))
+            if not ユーザー == None:
+                await ctx.send(embed=discord.Embed(title=f"{ユーザー.display_name}さんのユーザーIDは、`{ユーザー.id}`です。", color=discord.Color.green()))
                 return
             await ctx.send(embed=discord.Embed(title=f"あなたのユーザーIDは、`{ctx.author.id}`です。", color=discord.Color.green()))
         except:

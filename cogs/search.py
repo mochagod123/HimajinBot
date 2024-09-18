@@ -17,86 +17,36 @@ class helpc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.hybrid_command(name = "gogole", with_app_command = True, description = "Google検索をします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def google(self, ctx, a: str):
-        await ctx.send(f"https://www.google.co.jp/search?q={a.replace("@", "＠")}")
+    async def google(self, ctx, キーワード: str):
+        await ctx.send(f"https://www.google.co.jp/search?q={キーワード.replace("@", "＠")}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "ggrks", with_app_command = True, description = "GGRKSをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def ggrks(self, ctx, a: str):
-        await ctx.send(f"http://ggrks.atspace.tv/?{a.replace("@", "＠")}")
+    async def ggrks(self, ctx, キーワード: str):
+        await ctx.send(f"http://ggrks.atspace.tv/?{キーワード.replace("@", "＠")}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "amazon", with_app_command = True, description = "Amazon検索をします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def amazon(self, ctx, a: str):
-        await ctx.send(f"https://www.amazon.co.jp/s?k={a.replace("@", "＠")}")
+    async def amazon(self, ctx, キーワード: str):
+        await ctx.send(f"https://www.amazon.co.jp/s?k={キーワード.replace("@", "＠")}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "safeweb", with_app_command = True, description = "SafeWebをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def safeweb(self, ctx, a: str):
-        await ctx.send(f"分析結果: \nhttps://safeweb.norton.com/report?url={a.replace("@", "＠")}")
+    async def safeweb(self, ctx, url: str):
+        await ctx.send(f"分析結果: \nhttps://safeweb.norton.com/report?url={url.replace("@", "＠")}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "ul", with_app_command = True, description = "ユーザー検索をします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def rafi(self, ctx):
-        try:
-            lists = []
-            filename = 'data/malnet.csv'
-            with open(filename, encoding='utf8', newline='') as f:
-                csvreader = csv.reader(f)
-                for row in csvreader:
-                    lists.append(row[1])
-
-            embed=discord.Embed(title=f"とても危険なサイト\nURL-> {random.choice(lists).replace("http", "ht0p")}", description="このサイトはとても危険です。\nアクセスする際は自己責任でお願いします。\n(リンク切れかも。。)")
-            await ctx.send(embed=embed)
-        except:
-            await ctx.send(f"{sys.exc_info()}")
-
-    @commands.group()
-    @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def niconico(self, ctx, key: str):
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(f'https://www.nicovideo.jp/search/{urllib.parse.quote_plus(key, encoding='utf-8')}?ref=nicotop_search') as response:
-                    soup = BeautifulSoup(await response.text(), 'html.parser')
-                    name = soup.find_all("p", class_="itemTitle")
-                    url = soup.find_all("a", class_="itemThumbWrap")
-                    ret = []
-                    rets = []
-                    for t in name:
-                        ret.append(t.text)
-                    for a in ret:
-                        if a != '':
-                            rets.append(a)
-
-                    reta = []
-                    retsa = []
-                    for t in url:
-                        reta.append(t['href'])
-                    for a in reta:
-                        if a != '':
-                            retsa.append(a)
-
-                    embed=discord.Embed(title="NicoNico検索", description=f"{rets[0].replace("@", "")}\nhttps://www.nicovideo.jp{retsa[0].replace("@", "")}", color=0x00ff62, url=f"https://www.nicovideo.jp{retsa[0].replace("@", "")}")
-                    msg = await ctx.send(embed=embed)
-
-        except IndexError:
-            embed=discord.Embed(title="NicoNico検索", description="エラーが発生しました。\nそのような動画はありませんでした。", color=0x00ff62)
-            await ctx.send(embed=embed)
-        except:
-            return
-
-    @commands.command(aliases=["ul"])
-    @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def ulookup(self, ctx, usera: int):
+    async def uk(self, ctx, ユーザー: discord.User):
         try:
             unsei = ["大吉", "中吉", "吉", "末吉", "小吉", "凶", "大凶"]
             choice = random.choice(unsei)
             checkgban = 0
             checkgmute = 0
             client = MongoClient('mongodb://localhost:27017/')
-            user = await self.bot.fetch_user(usera)
+            user = ユーザー
             embed = discord.Embed(title=f"{user.display_name}",color=user.accent_color)
             embed.add_field(name="ユーザーの名前",value=str(user))
             embed.add_field(name="アカウント作成日",value=user.created_at)
@@ -137,12 +87,12 @@ class helpc(commands.Cog):
         except:
             await ctx.send(f"{sys.exc_info()}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "pypi", with_app_command = True, description = "pypi検索をします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def pypi(self, ctx, key: str):
+    async def pypi(self, ctx, キーワード: str):
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f'https://pypi.org/search/?q={key}') as response:
+                async with session.get(f'https://pypi.org/search/?q={キーワード}') as response:
                     soup = BeautifulSoup(await response.text(), 'html.parser')
                     title = soup.find('span', class_="package-snippet__name")
                     link = soup.find('a', class_="package-snippet")
@@ -190,6 +140,32 @@ class helpc(commands.Cog):
                 url = soup.find_all('h3', class_="UserInfo__name")[0]
                 url2 = url.find_all('a')[0]
                 await ctx.send(f"https://archive.sudomemo.net/user{url2["href"]}")
+
+    @commands.hybrid_command(name = "us", with_app_command = True, description = "キーワードユーザー検索をします。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def us(self, ctx, キーワード: str):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'https://dissoku.net/ja/friend/search/result?q={キーワード}&page=1') as response:
+                    soup = BeautifulSoup(await response.text(), 'html.parser')
+                    name = soup.find_all('a', class_="font-weight-bold text-wrap text-h6")[0]
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'https://dissoku.net{name["href"]}') as response:
+                    soup = BeautifulSoup(await response.text(), 'html.parser')
+                    image = soup.find_all('meta', property="og:image")[0]
+                    dec = soup.find_all('meta', property="og:description")[0]
+            msg = await ctx.send(embed=discord.Embed(title=f"{name.get_text()}", url=f"https://dissoku.net{name["href"]}", description=f"{dec["content"]}").set_thumbnail(url=f"{image["content"]}"))
+            await msg.add_reaction("🗑️")
+            def check(r, u):
+                if u.id == ctx.author.id:
+                    return r.message.id == msg.id
+                else:
+                    return False
+            r, _ = await self.bot.wait_for("reaction_add", check=check, timeout=10)
+            if r.emoji == "🗑️":
+                await msg.delete()
+        except asyncio.TimeoutError:
+            return
 
 async def setup(bot):
     await bot.add_cog(helpc(bot))

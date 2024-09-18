@@ -73,7 +73,7 @@ class Minecraft(commands.Cog):
                     await ctx.send(f"```{cmds}```")
                     break
         except asyncio.TimeoutError:
-            await ctx.send('タイムアウトしました。')
+            return
         except:
             await ctx.send(f"Error!\n{sys.exc_info()}")
 

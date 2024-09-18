@@ -34,15 +34,19 @@ class autoreply(commands.Cog):
                 except:
                     continue
 
-    @commands.group(aliases=["ar"])
+    @commands.hybrid_group(fallback='info', description = "自動返信関連のコマンドです。")
     async def autoreply(self, ctx):
-        return
+        await ctx.reply("自動返信関連のコマンドです。")
 
-    @autoreply.group(name="add")
+    @autoreply.command(name = "add", with_app_command = True, description = "自動返信を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(administrator=True)
-    async def autoreply_add(self, ctx, q: str, a: str, name: str, icon: str):
+    async def autoreply_add(self, ctx, 受け取り: str, 返し: str, 名前: str, あばたーurl: str):
         try:
+            q = 受け取り
+            a = 返し
+            name = 名前
+            icon = あばたーurl
             client = MongoClient('mongodb://localhost:27017/')
             add_data = {f"IDs": f"{ctx.guild.id}", f"q": f"{q}"}
             add_datad = {f"IDs": f"{ctx.guild.id}", f"q": f"{q}", "a": f"{a}", "name": f"{name}", f"icon": f"{icon}"}
@@ -52,19 +56,19 @@ class autoreply(commands.Cog):
         except:
             await ctx.send("エラー。")
 
-    @autoreply.group(name="remove")
+    @autoreply.command(name = "remove", with_app_command = True, description = "自動返信を削除します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(administrator=True)
-    async def autoreply_remove(self, ctx, q: str):
+    async def autoreply_remove(self, ctx, 受け取り: str):
         try:
             client = MongoClient('mongodb://localhost:27017/')
-            add_datad = {f"IDs": f"{ctx.guild.id}", f"q": f"{q}"}
+            add_datad = {f"IDs": f"{ctx.guild.id}", f"q": f"{受け取り}"}
             client['Main']["AutoReply"].delete_one(add_datad)
-            await ctx.reply(embed=discord.Embed(title=f"自動返信削除 - {q}", description="を削除しました。"))
+            await ctx.reply(embed=discord.Embed(title=f"自動返信削除 - {受け取り}", description="を削除しました。"))
         except:
             await ctx.send("エラー。")
 
-    @autoreply.group(name="list")
+    @autoreply.command(name = "list", with_app_command = True, description = "自動返信リストを表示します、")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def autoreply_list(self, ctx):
         try:

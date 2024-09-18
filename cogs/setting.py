@@ -89,8 +89,58 @@ class setting(commands.Cog):
                 except:
                     continue
 
+        client = MongoClient('mongodb://localhost:27017/')
+        for mon in client["Main"]["Kana"].find():
+            if mon["IDs"] == f"{message.channel.id}":
+                try:
+                    tokenjson = open('../token.json', 'r')
+                    tokens = json.load(tokenjson)
+                    whname = f"ModoBot"
+                    ch_webhooks = await message.channel.webhooks()
+                    webhooks = discord.utils.get(ch_webhooks, name=whname)
+                    if webhooks is None:
+                        webhooks = await message.channel.create_webhook(name=f"{whname}")
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post("https://kana.renorari.net/api/v2/chat", json={"message":f"{message.content}","user":{"id":f"{tokens["kanaid"]}","password":f"{tokens["kanapass"]}"},"character_name":"discord","custom_character":"おは#100#5-9#おはよう!!,おっはー！,おはよーぅ!#null#{}\nおは#100#10-17#おそよう,今お昼だよ、おはよ#null#{}\nおは#100#18-4#昼夜逆転♫おはよ!,私はもう少しで寝ますよ?おはよ#null#{}"}) as response:
+                            kkk = await response.text()
+                            async with aiohttp.ClientSession() as session:
+                                webhook = Webhook.from_url(webhooks.url, session=session)
+                                await webhook.send(f"{json.loads(kkk)["reply"].replace("もどっぐ", f"{message.author.display_name}")}", username=f"かなちゃん", avatar_url=f"https://yt3.googleusercontent.com/Q2yN9GaRPKbMcRVthn2_FegI5PAvfA9DLNZK-pzLybxWw5j9Emdh_hXGMuSqqIKWjmcNmSwEfOY=s900-c-k-c0x00ffffff-no-rj")
+            
+                except:
+                    continue
+
+        for mon in client["Main"]["Yuda"].find():
+            if mon["IDs"] == f"{message.channel.id}":
+                try:
+                    msg = "None"
+                    mmm = message.content
+                    if "こんにちは" in mmm:
+                        msg = f"こんにちは。。{message.author.name}さん。。"
+                    elif "使えない" in mmm:
+                        msg = f"無料なんだから使わなきゃいいじゃないですか？？"
+                    else:
+                        msg = "そっか。。"
+                    whname = f"ModoBot"
+                    ch_webhooks = await message.channel.webhooks()
+                    webhooks = discord.utils.get(ch_webhooks, name=whname)
+                    if webhooks is None:
+                        webhooks = await message.channel.create_webhook(name=f"{whname}")
+                    async with aiohttp.ClientSession() as session:
+                        webhook = Webhook.from_url(webhooks.url, session=session)
+                        await webhook.send(f"{msg}", username=f"ゆだ", avatar_url=f"https://pbs.twimg.com/media/FKSFNlNaQAAOP_L.jpg")
+            
+                except:
+                    continue
+
+    async def post_request(self, url, data, he):
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=data, headers=he) as response:
+                return
+
     @commands.Cog.listener("on_message")
     async def on_message_automod(self, message):
+
         if message.author.bot:
             return
 
@@ -133,13 +183,30 @@ class setting(commands.Cog):
                 except:
                     continue
 
-    @commands.group()
-    @commands.cooldown(1, 10, type=commands.BucketType.user)
+        for mon in client["Main"]["Kami"].find():
+            if mon["IDs"] == f"{message.channel.id}":
+                try:
+                    tokenjson = open('../token.json', 'r')
+                    tokens = json.load(tokenjson)
+                    headers = {
+                        'Authorization': f'Bot {tokens["trans"]}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                    url = 'https://discordapp.com/api/channels/1284070967009738787/messages'
+                    data = {'content': f'{message.author.display_name} > {message.content}'}
+                    # html = await self.post_request(url, data, headers)
+                    # await message.add_reaction("<a:wifi:1266328143384281118>")
+                except:
+                    print(f"{sys.exc_info()}")
+                    continue
+
     @commands.has_permissions(administrator=True)
-    async def transch(self, ctx, tf: int = None):
+    @commands.hybrid_command(name = "transch", with_app_command = True, description = "自動翻訳をします。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def transch(self, ctx, 有効にするか: bool):
         try:
             client = MongoClient('mongodb://localhost:27017/')
-            if tf == 1:
+            if 有効にするか:
                 add_datad = {f"IDs": f"{ctx.channel.id}"}
                 client['Main']["TransChannel"].delete_one(add_datad)
                 add_data = {f"IDs": f"{ctx.channel.id}"}
@@ -198,11 +265,53 @@ class setting(commands.Cog):
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    @commands.has_permissions(administrator=True)
-    async def invcheck(self, ctx, tf: int = None):
+    @commands.has_permissions(manage_channels=True)
+    async def joinyuda(self, ctx, tf: int = None):
         try:
             client = MongoClient('mongodb://localhost:27017/')
             if tf == 1:
+                add_datad = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Yuda"].delete_one(add_datad)
+                add_data = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Yuda"].insert_one(add_data)
+                embed=discord.Embed(title="ゆだ", description=f"ゆだを有効にしました。", color=0xa6c412)
+                await ctx.send(embed=embed)
+            else:
+                add_datad = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Yuda"].delete_one(add_datad)
+                embed=discord.Embed(title="ゆだ", description=f"ゆだを無効にしました。", color=0xa6c412)
+                await ctx.send(embed=embed)
+        except:
+            await ctx.send("エラー。")
+
+    @commands.group()
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
+    async def joinkana(self, ctx, tf: int = None):
+        try:
+            client = MongoClient('mongodb://localhost:27017/')
+            if tf == 1:
+                add_datad = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Kana"].delete_one(add_datad)
+                add_data = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Kana"].insert_one(add_data)
+                embed=discord.Embed(title="かな", description=f"かなちゃんを有効にしました。", color=0xa6c412)
+                await ctx.send(embed=embed)
+            else:
+                add_datad = {f"IDs": f"{ctx.channel.id}"}
+                client['Main']["Kana"].delete_one(add_datad)
+                embed=discord.Embed(title="かな", description=f"かなちゃんを無効にしました。", color=0xa6c412)
+                await ctx.send(embed=embed)
+        except:
+            await ctx.send("エラー。")
+
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.hybrid_command(name = "invcheck", with_app_command = True, description = "招待リンクを検出をします。")
+    @commands.has_permissions(administrator=True)
+    async def invcheck(self, ctx, 有効にするか: bool):
+        try:
+            client = MongoClient('mongodb://localhost:27017/')
+            if 有効にするか:
                 add_datad = {f"IDs": f"{ctx.guild.id}"}
                 client['Main']["Invcheck"].delete_one(add_datad)
                 add_data = {f"IDs": f"{ctx.guild.id}"}
@@ -279,13 +388,13 @@ class setting(commands.Cog):
         except:
             await ctx.send("エラー。")
 
-    @commands.group()
+    @commands.hybrid_command(name = "news", with_app_command = True, description = "ニュースを配信します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(manage_channels=True)
-    async def news(self, ctx, tf: int = None):
+    async def news(self, ctx, 配信するか: bool):
         try:
             client = MongoClient('mongodb://localhost:27017/')
-            if tf == 1:
+            if 配信するか:
                 add_datad = {f"IDs": f"{ctx.channel.id}"}
                 client['Main']["News"].delete_one(add_datad)
                 client['Main']["News"].insert_one(add_datad)
@@ -299,13 +408,13 @@ class setting(commands.Cog):
         except:
             await ctx.send("エラー。")
 
-    @commands.group()
+    @commands.hybrid_command(name = "tenki", with_app_command = True, description = "天気を配信します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(manage_channels=True)
-    async def tenki(self, ctx, tf: int = None):
+    async def tenki(self, ctx, 配信するか: bool):
         try:
             client = MongoClient('mongodb://localhost:27017/')
-            if tf == 1:
+            if 配信するか:
                 add_datad = {f"IDs": f"{ctx.channel.id}"}
                 client['Main']["Tenki"].delete_one(add_datad)
                 client['Main']["Tenki"].insert_one(add_datad)
@@ -318,14 +427,14 @@ class setting(commands.Cog):
                 await ctx.send(embed=embed)
         except:
             await ctx.send("エラー。")
-            
-    @commands.group()
+
+    @commands.hybrid_command(name = "enagban", with_app_command = True, description = "GBANを許可します、")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(manage_channels=True)
-    async def enagban(self, ctx, tf: int = None):
+    async def enagban(self, ctx, 許可するか: bool):
         try:
             client = MongoClient('mongodb://localhost:27017/')
-            if tf == 1:
+            if 許可するか:
                 add_datad = {f"IDs": f"{ctx.guild.id}"}
                 client['Main']["GBAN"].delete_one(add_datad)
                 add_data = {f"IDs": f"{ctx.guild.id}"}
@@ -339,6 +448,69 @@ class setting(commands.Cog):
                 await ctx.send(embed=embed)
         except:
             await ctx.send("エラー。")
+
+    @commands.group()
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
+    async def banlink_password(self, ctx, password: str = None):
+        try:
+            client = MongoClient('mongodb://localhost:27017/')
+            if password == None:
+                await ctx.send("パスワードを削除し、BANLinkを無効にしました。")
+                add_datad = {f"IDs": f"{ctx.guild.id}"}
+                client['Main']["BANLink"].delete_one(add_datad)
+                return
+            await ctx.message.delete()
+            add_datad = {f"IDs": f"{ctx.guild.id}"}
+            client['Main']["BANLink"].delete_one(add_datad)
+            add_data = {f"IDs": f"{ctx.guild.id}", "Pass": f"{password}"}
+            client['Main']["BANLink"].insert_one(add_data)
+            embed=discord.Embed(title="BANLinkを有効", description=f"BANLinkを有効にしました。", color=0xa6c412)
+            await ctx.send(embed=embed)
+            await ctx.author.send(f"パスワード: {password}")
+        except:
+            await ctx.send("エラー。")
+
+    @commands.group()
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
+    async def banlink(self, ctx, user: discord.User, password: str):
+        try:
+            client = MongoClient('mongodb://localhost:27017/')
+            usid = []
+            gui = []
+            client = MongoClient('mongodb://localhost:27017/')
+            for gbang in client["Main"]["BANLink"].find(filter={'Pass':f'{password}'}):
+                gui.append(gbang["IDs"])
+            print(gui)
+            for guild in gui:
+                try:
+                    guilds = self.bot.get_guild(int(guild))
+                    await guilds.ban(user, reason="BANLinkです。")
+                    usid.append(f"{guilds.name}..OK")
+                    await asyncio.sleep(1)
+                except:
+                    usid.append(f"{guilds.name}..Error")
+            await ctx.reply(f"BANが完了しました。\n{len(usid)}サーバー\n{"\n".join(usid)}")
+        except:
+            await ctx.send("エラー。")
+
+    @commands.hybrid_command(name = "setup", with_app_command = True, description = "Setupします。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
+    async def setup(self, ctx):
+        client = MongoClient('mongodb://localhost:27017/')
+        #InvCheck
+        add_datad = {f"IDs": f"{ctx.guild.id}"}
+        client['Main']["Invcheck"].delete_one(add_datad)
+        add_data = {f"IDs": f"{ctx.guild.id}"}
+        client['Main']["Invcheck"].insert_one(add_data)
+        # GBAN
+        add_datad = {f"IDs": f"{ctx.guild.id}"}
+        client['Main']["GBAN"].delete_one(add_datad)
+        add_data = {f"IDs": f"{ctx.guild.id}"}
+        client['Main']["GBAN"].insert_one(add_data)
+        await ctx.reply("セットアップが完了しました。\n招待リンク検出を有効にしました。\nGBANを許可しました。\nこのSetupは再度実行する必要はありません。")
 
 async def setup(bot):
     await bot.add_cog(setting(bot))

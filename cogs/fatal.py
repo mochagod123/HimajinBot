@@ -70,19 +70,19 @@ class Fatal(commands.Cog):
             except:
                 return
 
-    @commands.group()
+    @commands.hybrid_command(name = "kick", with_app_command = True, description = "キックします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, *, member: discord.Member):
-        await ctx.guild.kick(member)
-        await ctx.send(f'{member.mention}をKickしました。')
+    async def kick(self, ctx, *, メンバー: discord.Member):
+        await ctx.guild.kick(メンバー)
+        await ctx.send(f'{メンバー.mention}をKickしました。')
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, *, member: discord.Member):
-        await ctx.guild.ban(member)
-        await ctx.send(f'{member.mention}をBANしました。')
+    async def ban(self, ctx, メンバー: discord.Member):
+        await ctx.guild.ban(メンバー)
+        await ctx.send(f'{メンバー.mention}をBANしました。')
 
     @commands.group(aliases=["purge"])
     @commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -98,14 +98,23 @@ class Fatal(commands.Cog):
             await ctx.send(f'チャンネルをきれいにしました。')
             return
 
-    @commands.group()
+    @commands.hybrid_command(name = "warn", with_app_command = True, description = "Warnします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def warn(self, ctx, member: discord.Member, level: int):
+    async def warn(self, ctx, メンバー: discord.Member, レベル: int):
+        member = メンバー
+        level = レベル
         await ctx.send(embed=discord.Embed(title=f"{member.display_name}をWarnしてみます。。"))
         await self.send_warnlog(member.display_name, ctx.author.display_name)
         await self.warn_handle(ctx.guild, member, level)
         await ctx.send(embed=discord.Embed(title=f"Warnが完了しました。"))
+
+    @commands.hybrid_command(name = "lock", with_app_command = True, description = "チャンネルを封鎖します。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
+    async def lock(self, ctx):
+        await ctx.channel.set_permissions(ctx.guild.default_role,send_messages=False)
+        await ctx.send(embed=discord.Embed(title=f"ここで管理者以外がしゃべれなくしました。"))
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)

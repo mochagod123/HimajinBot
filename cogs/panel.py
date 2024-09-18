@@ -8,6 +8,8 @@ import asyncio
 from pymongo import MongoClient
 import sys
 import time
+from googletrans import Translator
+import aiohttp
 import string
 
 COOLDOWN_AMOUNT = 2.0  # seconds
@@ -25,6 +27,7 @@ class Panel(commands.Cog):
 
     @commands.command(name="poll")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
     async def ank(self, ctx, *, arg):
         try:
             if arg:
@@ -67,8 +70,9 @@ class Panel(commands.Cog):
             await ctx.send(f"{sys.exc_info()}")
 
 
-    @commands.command()
+    @commands.hybrid_command(name = "top", with_app_command = True, description = "最前面に移動します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
     async def top(self, ctx):
         try:
             lists = []
@@ -79,8 +83,9 @@ class Panel(commands.Cog):
         except:
             await ctx.send(f"{sys.exc_info()}")
 
-    @commands.command()
+    @commands.hybrid_command(name = "linkbutton", with_app_command = True, description = "URLをボタンにします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
     async def linkbutton(self, ctx, url: str):
         try:
             await ctx.message.delete()
@@ -90,8 +95,9 @@ class Panel(commands.Cog):
         except:
             await ctx.send(f"{sys.exc_info()}")
 
-    @commands.command()
+    @commands.hybrid_command(name = "rolepanel", with_app_command = True, description = "ロールパネルを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
+    @commands.has_permissions(manage_channels=True)
     async def rolepanel(self, ctx, title: str, role1: discord.Role, role2: discord.Role = None, role3: discord.Role = None, role4: discord.Role = None, role5: discord.Role = None):
         try:
             await ctx.message.delete()
@@ -129,6 +135,16 @@ class Panel(commands.Cog):
             client['Main']["NRP"].insert_one(add_data)
         except:
             await ctx.send(f"{sys.exc_info()}")
+
+    @commands.hybrid_command(name = "mhw_panel", with_app_command = True, description = "MHWの武器をもぎ取るパネルを作成します。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def mhww_panel(self, ctx):
+        client = MongoClient('mongodb://localhost:27017/')
+        m = await ctx.send(embed=discord.Embed(title="MHWの武器をランダムに取得", color=discord.Color.red()))
+        await m.add_reaction("🔍")
+        add_datad = {f"IDs": f"{m.id}"}
+        client['Main']["MHWWPanel"].delete_one(add_datad)
+        client['Main']["MHWWPanel"].insert_one(add_datad)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, pl):
@@ -201,12 +217,33 @@ class Panel(commands.Cog):
                         await msg.delete()
                         return
                     await member.add_roles(role)
+                    msmm = await channel.fetch_message(pl.message_id)
+                    await msmm.remove_reaction(pl.emoji, member)
                     msg = await channel.send(f"{role.name}を{member.name}に付与しました。")
                     await asyncio.sleep(3)
                     await msg.delete()
                 else:
                     continue
+            for mon in client["Main"]["MHWWPanel"].find():
+                if mon["IDs"] == f"{pl.message_id}":
+                    channel = self.bot.get_channel(pl.channel_id)
+                    guild = self.bot.get_guild(pl.guild_id)
+                    member = guild.get_member(pl.user_id)
+                    url = f"https://mhw-db.com/weapons/{random.randint(1, 800)}"
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(url) as response:
+                            jsonData = await response.json()
+                            embed = discord.Embed(title=jsonData["name"], color=0x702f00)
+                            embed.set_image(url=jsonData['assets']['image'])
+                            embed.set_thumbnail(url=jsonData['assets']['icon'])
+                    msmm = await channel.fetch_message(pl.message_id)
+                    await msmm.remove_reaction(pl.emoji, member)
+                    member = guild.get_member(pl.user_id)
+                    msg = await channel.send(embed=embed)
+                    await asyncio.sleep(5)
+                    await msg.delete()
         except:
+            print(f"{sys.exc_info()}")
             return
 
 async def setup(bot):

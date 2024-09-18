@@ -11,38 +11,12 @@ class Game(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.hybrid_command(name = "uranai", with_app_command = True, description = "占いをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def uranai(self, ctx):
         unsei = ["大吉", "中吉", "吉", "末吉", "小吉", "凶", "大凶"]
         choice = random.choice(unsei)
         await ctx.send(choice)
-
-    @commands.group()
-    @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def whn(self, ctx):
-        def check(m=ctx.message):
-            return m.author == ctx.author
-        num = random.randint(0, 100)
-        await ctx.channel.send("1~100までの数字を入れて")
-        i = 0
-        while True:
-            numc = await self.bot.wait_for("message", check=check, timeout=None)
-            try:
-                if int(numc.content) == num:
-                    await ctx.channel.send(f"数字が正しいです！(正解するまでに{i}回かかりました。)")
-                    break
-                elif int(numc.content) > num:
-                    await ctx.channel.send("数字がもっと小さいよ！")
-                    i += 1
-                    await asyncio.sleep(2)
-                elif int(numc.content) < num:
-                    await ctx.channel.send("数字がもっと大きいよ！")
-                    i += 1
-                    await asyncio.sleep(2)
-            except:
-                await ctx.reply("数字以外入れてる？ゲームを中断するね")
-                break
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -90,7 +64,7 @@ class Game(commands.Cog):
         except:
             await ctx.send(f"Error!\n{sys.exc_info()}")
 
-    @commands.group()
+    @commands.hybrid_command(name = "lubl", with_app_command = True, description = "ラッキーブロックをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def lubl(self, ctx):
         try:
@@ -103,7 +77,7 @@ class Game(commands.Cog):
             await ctx.send(f"Error!\n{sys.exc_info()}")
             return
 
-    @commands.group()
+    @commands.hybrid_command(name = "janken", with_app_command = True, description = "じゃんけんします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def janken(self, ctx):
         jankenk = ["ぼくのかち", "ぼくのまけ、、", "あいこ。"]

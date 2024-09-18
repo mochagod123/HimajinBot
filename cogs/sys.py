@@ -46,7 +46,7 @@ class system(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(title="エラーが発生しました。", description=f"```{err}```", color=0xff0000))
 
-    @tasks.loop(seconds=900)
+    @tasks.loop(hours=2)
     async def sendads(self):
         ads = ["現在広告募集中です！"]
         chid = []
@@ -61,7 +61,7 @@ class system(commands.Cog):
             except:
                 continue
 
-    @tasks.loop(seconds=1800)
+    @tasks.loop(hours=2)
     async def sendnews(self):
         chid = []
         client = MongoClient('mongodb://localhost:27017/')
@@ -80,7 +80,7 @@ class system(commands.Cog):
             except:
                 continue
 
-    @tasks.loop(seconds=1800)
+    @tasks.loop(hours=2)
     async def sendtenki(self):
         dt_now = datetime.datetime.now()
         chid = []

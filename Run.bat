@@ -1,4 +1,4 @@
 echo off
 cls
-py -m -B main.py
+py -m main.py
 PAUSE

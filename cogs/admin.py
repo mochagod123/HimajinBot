@@ -112,21 +112,22 @@ class AdminCommand(commands.Cog):
         except:
             await self.bot.get_channel(1265894171747680298).send(f"{sys.exc_info()}")
 
-    @commands.group(aliases=["re"])
+    @commands.hybrid_command(name = "reload", with_app_command = True, description = "再読み込みします。")
     @commands.cooldown(3, 10, type=commands.BucketType.user)
     @commands.is_owner()
-    async def reload(self, ctx, a: str = None):
-        if a == None:
+    async def reload(self, ctx, ファイルの名前: str = None):
+        if ファイルの名前 == None:
             for cog in os.listdir("cogs"):
                 if cog.endswith(".py"):
                     await self.bot.reload_extension(f"cogs.{cog[:-3]}")
                     await ctx.reply("Reload .. OK!")
                     return
-        if (os.path.isfile(f"cogs/{a}.py")):
-            await self.bot.reload_extension(f"cogs.{a}")
+        if (os.path.isfile(f"cogs/{ファイルの名前}.py")):
+            await self.bot.reload_extension(f"cogs.{ファイルの名前}")
             await ctx.reply("Reload .. OK!")
         else:
             await ctx.reply("Error! No File!")
+        await self.bot.tree.sync()
 
     @commands.group()
     @commands.cooldown(3, 10, type=commands.BucketType.user)
@@ -292,6 +293,14 @@ class AdminCommand(commands.Cog):
             subprocess.run(["shutdown", "/r", "/t", "0"])
         except:
             await ctx.send("Error!")
+
+    @commands.group()
+    @commands.is_owner()
+    async def getpuser(self, ctx):
+        mem = []
+        for i in self.bot.get_guild(1265256517582717009).get_role(1266722263172911137).members:
+            mem.append(i.display_name)
+        await ctx.send(f"GUserList: ```{"\n".join(mem)}```")
 
     @commands.group()
     @commands.is_owner()

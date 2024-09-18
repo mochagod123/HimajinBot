@@ -14,6 +14,7 @@ import cv2
 import re
 from alphabet2kana import a2k
 import sys
+import json
 from discord import Webhook
 import cv2
 
@@ -21,7 +22,7 @@ class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
+    @commands.hybrid_command(name = "hunter", with_app_command = True, description = "MHの主人公を生成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def hunter(self, ctx):
         embed = discord.Embed(title="ハンター")
@@ -31,9 +32,10 @@ class Fun(commands.Cog):
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
         await ctx.reply(file=file, embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "mhavatar", with_app_command = True, description = "MHのアバターを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def mhavatar(self, ctx, a: str):
+    async def mhavatar(self, ctx, ユーザー: discord.User):
+        a = ユーザー.display_name
         n = 6
         join_string = "\n"
         new_string = join_string.join([a[i:i+n] for i in range(0, len(a), n)])
@@ -51,9 +53,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "shinchoku", with_app_command = True, description = "進捗を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def shinchoku(self, ctx, a: str):
+    async def shinchoku(self, ctx, テキスト: str):
+        a = テキスト
         sendio = io.BytesIO()
         image1 = Image.open("data/Shinchoku/Base.png")
         draw = ImageDraw.Draw(image1)
@@ -68,9 +71,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "robokasu", with_app_command = True, description = "ろぼかすを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def robokasu(self, ctx, a: str):
+    async def robokasu(self, ctx, テキスト: str):
+        a = テキスト
         n = 8
         join_string = "\n"
         new_string = join_string.join([a[i:i+n] for i in range(0, len(a), n)])
@@ -88,9 +92,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "yuta", with_app_command = True, description = "ゆうたを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def yuta(self, ctx, a: str):
+    async def yuta(self, ctx, 名言: str):
+        a = 名言
         sendio = io.BytesIO()
         image1 = Image.open("data/Yuta/Base.jpg")
         draw = ImageDraw.Draw(image1)
@@ -105,9 +110,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "dragon", with_app_command = True, description = "ドラゴンを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def dragon(self, ctx, a: str):
+    async def dragon(self, ctx, 名言: str):
+        a = 名言
         n = 9
         join_string = "\n"
         new_string = join_string.join([a[i:i+n] for i in range(0, len(a), n)])
@@ -125,9 +131,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "nikuyaki", with_app_command = True, description = "肉焼きをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def nikuyaki(self, ctx, *, member: discord.User):
+    async def nikuyaki(self, ctx, *, メンバー: discord.User):
+        member = メンバー
         content = requests.get(member.display_avatar)
         pdf_data = io.BytesIO(content.content)
         sendio = io.BytesIO()
@@ -144,9 +151,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "yusha", with_app_command = True, description = "勇者を召喚します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def yusha(self, ctx, *, member: discord.User):
+    async def yusha(self, ctx, *, ユーザー: discord.User):
+        member = ユーザー
         content = requests.get(member.display_avatar)
         pdf_data = io.BytesIO(content.content)
         sendio = io.BytesIO()
@@ -163,9 +171,10 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.group()
+    @commands.hybrid_command(name = "riaju", with_app_command = True, description = "リア充が爆発します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def riaju(self, ctx, *, member: discord.User):
+    async def riaju(self, ctx, *, ユーザー: discord.User):
+        member = ユーザー
         content = requests.get(member.display_avatar)
         pdf_data = io.BytesIO(content.content)
         sendio = io.BytesIO()
@@ -182,9 +191,61 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed)
         sendio.close()
 
-    @commands.command(name="3ds")
+    @commands.hybrid_command(name = "3ds", with_app_command = True, description = "3dsを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def sands(self, ctx):
+    async def sands(self, ctx, 画像: discord.Attachment):
+        try:
+            image_byte = 画像
+            async with aiohttp.ClientSession() as session:
+                async with session.get(image_byte.url) as response:
+                    content = await response.read()
+                    pdf_data = io.BytesIO(content)
+                    sendio = io.BytesIO()
+                    img = Image.open(pdf_data)
+                    image1 = Image.open("data/3ds/Base.jpg")
+                    img_resize = img.resize((768, 772))
+                    image1.paste(img_resize, (7, 23))
+                    image1.save(sendio,format="png")
+                    sendio.seek(0)
+                    amsg = await self.bot.get_channel(1265978647391633439).send(file=discord.File(sendio, filename="result.png"))
+                    embed = discord.Embed(title="3ds")
+                    embed.set_image(url=amsg.attachments[0].url)
+                    embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
+                    await ctx.reply(embed=embed)
+                    sendio.close()
+                    await ctx.message.delete()
+        except:
+            return
+        
+    @commands.hybrid_command(name = "ps2", with_app_command = True, description = "PS2を作成します。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def pstwo(self, ctx, 画像: discord.Attachment):
+        try:
+            image_byte = 画像
+            async with aiohttp.ClientSession() as session:
+                async with session.get(image_byte.url) as response:
+                    content = await response.read()
+                    pdf_data = io.BytesIO(content)
+                    sendio = io.BytesIO()
+                    img = Image.open(pdf_data)
+                    image1 = Image.open("data/ps2.jpg")
+                    img_resize = img.resize((499, 638))
+                    image1.paste(img_resize, (5, 80))
+                    image1.save(sendio,format="png")
+                    sendio.seek(0)
+                    amsg = await self.bot.get_channel(1265978647391633439).send(file=discord.File(sendio, filename="result.png"))
+                    embed = discord.Embed(title="PS2")
+                    embed.set_image(url=amsg.attachments[0].url)
+                    embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
+                    await ctx.reply(embed=embed)
+                    sendio.close()
+                    await ctx.message.delete()
+        except:
+            return
+        
+    @commands.command()
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def switch_hard(self, ctx):
         try:
             if not ctx.message.attachments:
                 e = discord.Embed(title="添付ファイルがないです!", description="このメッセージは、\n5秒後に削除されます。")
@@ -198,13 +259,13 @@ class Fun(commands.Cog):
             pdf_data = io.BytesIO(content.content)
             sendio = io.BytesIO()
             img = Image.open(pdf_data)
-            image1 = Image.open("data/3ds/Base.jpg")
-            img_resize = img.resize((768, 772))
-            image1.paste(img_resize, (7, 23))
+            image1 = Image.open("data/Switch.jpg")
+            img_resize = img.resize((430, 235))
+            image1.paste(img_resize, (158, 77))
             image1.save(sendio,format="png")
             sendio.seek(0)
             amsg = await self.bot.get_channel(1265978647391633439).send(file=discord.File(sendio, filename="result.png"))
-            embed = discord.Embed(title="3ds")
+            embed = discord.Embed(title="Switch_Hard")
             embed.set_image(url=amsg.attachments[0].url)
             embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
             await ctx.reply(embed=embed)
@@ -215,16 +276,22 @@ class Fun(commands.Cog):
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def myqu(self, ctx, user: discord.User, a: str):
-        payload={
-            "username": user.name,
-            "display_name": user.display_name,
-            "text": a,
-            "avatar": user.avatar.url,
-            "color": True
-            }
-        quote=requests.post("https://api.voids.top/quote",json=payload).json()
-        await ctx.send(quote['url'])
+    async def myaq(self, ctx):
+        if ctx.message.reference:
+            reference_msg = await ctx.message.channel.fetch_message(ctx.message.reference.message_id)
+            user = reference_msg.author
+            payload={
+                "username": user.name,
+                "display_name": user.display_name,
+                "text": reference_msg.content,
+                "avatar": user.avatar.url,
+                "color": True
+                }
+            async with aiohttp.ClientSession() as session:
+                async with session.post("https://api.voids.top/quote", data=json.dumps(payload)) as response:
+                    k = await response.text()
+                    quote = json.loads(k)
+                    await ctx.send(quote['url'])
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -256,31 +323,33 @@ class Fun(commands.Cog):
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def naguru(self, ctx, *, member: discord.User):
-        content = requests.get(member.display_avatar)
-        pdf_data = io.BytesIO(content.content)
-        sendio = io.BytesIO()
-        img = Image.open(pdf_data)
-        image1 = Image.open("data/naguru.jpg")
-        img_resize = img.resize((67, 69))
-        image1.paste(img_resize, (65, 65))
-        image1.save(sendio,format="png")
-        sendio.seek(0)
-        amsg = await self.bot.get_channel(1265978647391633439).send(file=discord.File(sendio, filename="result.png"))
-        embed = discord.Embed(title="なぐる")
-        embed.set_image(url=amsg.attachments[0].url)
-        embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        await ctx.reply(embed=embed)
-        sendio.close()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(member.display_avatar.url) as response:
+                content = await response.read()
+                pdf_data = io.BytesIO(content)
+                sendio = io.BytesIO()
+                img = Image.open(pdf_data)
+                image1 = Image.open("data/naguru.jpg")
+                img_resize = img.resize((67, 69))
+                image1.paste(img_resize, (65, 65))
+                image1.save(sendio,format="png")
+                sendio.seek(0)
+                amsg = await self.bot.get_channel(1265978647391633439).send(file=discord.File(sendio, filename="result.png"))
+                embed = discord.Embed(title="なぐる")
+                embed.set_image(url=amsg.attachments[0].url)
+                embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
+                await ctx.reply(embed=embed)
+                sendio.close()
 
-    @commands.command(name="5000")
+    @commands.hybrid_command(name = "5000", with_app_command = True, description = "5000兆円を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def gosenchoen(self, ctx, a: str, b: str):
+    async def gosenchoen(self, ctx, うえ: str, した: str):
         embed = discord.Embed(title="5000兆円ほしい!")
-        embed.set_image(url=f"https://gsapi.cbrx.io/image?top={a}&bottom={b}")
+        embed.set_image(url=f"https://gsapi.cbrx.io/image?top={うえ}&bottom={した}")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
         await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "neko", with_app_command = True, description = "NyanNyan")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def neko(self, ctx):
         async with aiohttp.ClientSession() as session:
@@ -291,7 +360,7 @@ class Fun(commands.Cog):
                 embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
                 await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "kemomimi", with_app_command = True, description = "けみみみを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def kemomimi(self, ctx):
         async with aiohttp.ClientSession() as session:
@@ -302,7 +371,7 @@ class Fun(commands.Cog):
                 embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
                 await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "food", with_app_command = True, description = "食事を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def food(self, ctx):
         async with aiohttp.ClientSession() as session:
@@ -313,7 +382,7 @@ class Fun(commands.Cog):
                 embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
                 await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "coffee", with_app_command = True, description = "コーヒーを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def coffee(self, ctx):
         url = "https://nekobot.xyz/api/image?type=coffee"
@@ -325,7 +394,7 @@ class Fun(commands.Cog):
                 embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
                 await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "kanna", with_app_command = True, description = "Kannaを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def kanna(self, ctx):
         url = "https://nekobot.xyz/api/image?type=kanna"
@@ -349,7 +418,7 @@ class Fun(commands.Cog):
                 embed.set_image(url=jsonData["url"])
                 msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "dog", with_app_command = True, description = "犬を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def dog(self, ctx):
         url = "https://dog.ceo/api/breeds/image/random"
@@ -361,15 +430,15 @@ class Fun(commands.Cog):
                 embed.set_image(url=jsonData["message"])
                 msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "httpcat", with_app_command = True, description = "HTTPCATを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def httpcat(self, ctx, a: str):
+    async def httpcat(self, ctx, 数字: str):
         embed = discord.Embed(title="HttpCat")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        embed.set_image(url=f"https://http.cat/{a}")
+        embed.set_image(url=f"https://http.cat/{数字}")
         msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "fox", with_app_command = True, description = "きつねを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def fox(self, ctx):
         url = "https://randomfox.ca/floof/"
@@ -381,36 +450,36 @@ class Fun(commands.Cog):
                 embed.set_image(url=jsonData["image"])
                 msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "nounai", with_app_command = True, description = "脳内メーカーをします。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def nounai(self, ctx, a: str):
+    async def nounai(self, ctx, 名前: str):
         embed = discord.Embed(title="脳内メーカー")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        embed.set_image(url=f"https://maker.usoko.net/nounai/img/{a}.gif")
+        embed.set_image(url=f"https://maker.usoko.net/nounai/img/{名前}.gif")
         msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "isekai", with_app_command = True, description = "転生します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def isekai(self, ctx, a: str):
+    async def isekai(self, ctx, 名前: str):
         embed = discord.Embed(title="異世界家系図メーカー")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        embed.set_image(url=f"https://usokomaker.com/kakeizu_fantasy/r/img/{a}.gif")
+        embed.set_image(url=f"https://usokomaker.com/kakeizu_fantasy/r/img/{名前}.gif")
         msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "kabuto", with_app_command = True, description = "かぶとを製作します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def kabuto(self, ctx, a: str):
-        embed = discord.Embed(title=f"{a}の兜")
+    async def kabuto(self, ctx, 名前: str):
+        embed = discord.Embed(title=f"{名前}の兜")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        embed.set_image(url=f"https://usokomaker.com/kabuto/img/{a}.gif")
+        embed.set_image(url=f"https://usokomaker.com/kabuto/img/{名前}.gif")
         msg = await ctx.reply(embed=embed)
 
-    @commands.group()
+    @commands.hybrid_command(name = "smartphone", with_app_command = True, description = "スマホを作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def smartphone(self, ctx, a: str):
-        embed = discord.Embed(title=f"{a}のスマホ")
+    async def smartphone(self, ctx, 名前: str):
+        embed = discord.Embed(title=f"{名前}のスマホ")
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
-        embed.set_image(url=f"https://usokomaker.com/sumaho/img/{a}.gif")
+        embed.set_image(url=f"https://usokomaker.com/sumaho/img/{名前}.gif")
         msg = await ctx.reply(embed=embed)
 
     @commands.group()
@@ -421,17 +490,17 @@ class Fun(commands.Cog):
         embed.set_image(url=f"https://usokomaker.com/busyo/img/{a}.gif")
         msg = await ctx.reply(embed=embed)
         
-    @commands.group()
+    @commands.hybrid_command(name = "gifs", with_app_command = True, description = "GIFを検索します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def gifs(self, ctx, a: str):
+    async def gifs(self, ctx, 検索ワード: str):
         try:
-            if not a == None:
+            if not 検索ワード == None:
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(f'https://tenor.com/ja/search/{a}-gifs') as response:
+                    async with session.get(f'https://tenor.com/ja/search/{検索ワード}-gifs') as response:
                         soup = BeautifulSoup(await response.text(), 'html.parser')
                         title = soup.find_all('div', class_="Gif")[0]
                         titles = title.find_all('img')[0]
-                        embed = discord.Embed(title=f"{a}の検索結果")
+                        embed = discord.Embed(title=f"{検索ワード}の検索結果")
                         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
                         embed.set_image(url=f"{titles["src"]}")
                         msg = await ctx.reply(embed=embed)
@@ -440,7 +509,7 @@ class Fun(commands.Cog):
             await ctx.send(f"{sys.exc_info()}")
             return
 
-    @commands.command(aliases=["hika"])
+    @commands.hybrid_command(name = "hikakin", with_app_command = True, description = "ヒカキンを表示します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
     async def hikakin(self, ctx):
         embed = discord.Embed(title="ヒカキン")
@@ -451,10 +520,10 @@ class Fun(commands.Cog):
         embed.set_author(name=f"{ctx.author.display_name}", icon_url=f"{ctx.author.display_avatar}")
         await ctx.reply(file=file, embed=embed)
 
-    @commands.command(aliases=["sud"])
+    @commands.hybrid_command(name = "sud", with_app_command = True, description = "突然の死を作成します。")
     @commands.cooldown(1, 10, type=commands.BucketType.user)
-    async def suddendeath(self, ctx, a: str):
-        await ctx.reply(f"```{suddendeath.suddendeathmessage(a).replace("@", "")}```")
+    async def suddendeath(self, ctx, 言葉: str):
+        await ctx.reply(f"```{suddendeath.suddendeathmessage(言葉).replace("@", "")}```")
 
     @commands.command(aliases=["ych"])
     @commands.cooldown(1, 10, type=commands.BucketType.user)
@@ -474,6 +543,24 @@ class Fun(commands.Cog):
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(webhooks.url, session=session)
             await webhook.send(msg, username=f"ゆだ", avatar_url=f"https://pbs.twimg.com/media/FKSFNlNaQAAOP_L.jpg")
+
+    @commands.hybrid_command(name = "kch", with_app_command = True, description = "かなチャットをします。")
+    @commands.cooldown(1, 10, type=commands.BucketType.user)
+    async def kanachat(self, ctx, 言葉: str):
+        a = 言葉
+        tokenjson = open('../token.json', 'r')
+        tokens = json.load(tokenjson)
+        whname = f"ModoBot"
+        ch_webhooks = await ctx.channel.webhooks()
+        webhooks = discord.utils.get(ch_webhooks, name=whname)
+        if webhooks is None:
+            webhooks = await ctx.channel.create_webhook(name=f"{whname}")
+        async with aiohttp.ClientSession() as session:
+            async with session.post("https://kana.renorari.net/api/v2/chat", json={"message":f"{a}","user":{"id":f"{tokens["kanaid"]}","password":f"{tokens["kanapass"]}"},"character_name":"discord","custom_character":"おは#100#5-9#おはよう!!,おっはー！,おはよーぅ!#null#{}\nおは#100#10-17#おそよう,今お昼だよ、おはよ#null#{}\nおは#100#18-4#昼夜逆転♫おはよ!,私はもう少しで寝ますよ?おはよ#null#{}"}) as response:
+                kkk = await response.text()
+                async with aiohttp.ClientSession() as session:
+                    webhook = Webhook.from_url(webhooks.url, session=session)
+                    await webhook.send(f"{json.loads(kkk)["reply"].replace("もどっぐ", f"{ctx.author.display_name}")}", username=f"かなちゃん", avatar_url=f"https://yt3.googleusercontent.com/Q2yN9GaRPKbMcRVthn2_FegI5PAvfA9DLNZK-pzLybxWw5j9Emdh_hXGMuSqqIKWjmcNmSwEfOY=s900-c-k-c0x00ffffff-no-rj")
 
     @commands.group()
     @commands.cooldown(1, 10, type=commands.BucketType.user)
